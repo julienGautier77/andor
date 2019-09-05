@@ -9,17 +9,15 @@ a Python user interface for Ador Alta camera
 
 
 on conda prompt 
-pip install pymba (https://github.com/morefigs/pymba.git )
+
 pip install qdarkstyle (https://github.com/ColinDuquesnoy/QDarkStyleSheet.git)
 pip install pyqtgraph (https://github.com/pyqtgraph/pyqtgraph.git)
 pip install visu
-modify vimba.camera :acquire_frame(self) : self._single_frame.wait_for_capture(1000000)
-and comment the line (?)(?)
 
 @author: juliengautier
-version : 2019.3
+
 """
-__version__='2019.4'
+__version__='2019.9'
 __author__='julien Gautier'
 version=__version__
 
@@ -117,6 +115,7 @@ class ANDOR(QWidget):
     def setup(self):  
         """ user interface definition: 
         """
+        cameraWidget=QWidget()
         vbox1=QVBoxLayout() 
        
         self.camName=QLabel(self.ccdName,self)
@@ -213,8 +212,11 @@ class ANDOR(QWidget):
         self.IoButton=QPushButton('IO settings')
         vbox1.addWidget(self.IoButton)
         vbox1.addStretch(1)
+        cameraWidget.setLayout(vbox1)
+        cameraWidget.setMinimumSize(150,200)
+        cameraWidget.setMaximumSize(150,900)
         hMainLayout=QHBoxLayout()
-        hMainLayout.addLayout(vbox1)
+        hMainLayout.addWidget(cameraWidget)
         
         
         self.visualisation=SEE() ## Widget for visualisation and tools 
