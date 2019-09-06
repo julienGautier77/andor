@@ -13,7 +13,7 @@ It can make plot profile and data measurements  analysis
 *   python 3.x
 *   Numpy
 *   PyQt5
-*   visu
+*   visu :https://github.com/julienGautier77/visu.git
     
 
 
