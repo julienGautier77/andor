@@ -15,9 +15,9 @@ pip install pyqtgraph (https://github.com/pyqtgraph/pyqtgraph.git)
 pip install visu
 
 @author: juliengautier
-
+version : 2019.3
 """
-__version__='2019.9'
+__version__='2019.4'
 __author__='julien Gautier'
 version=__version__
 
@@ -41,6 +41,7 @@ apogee_module = win32com.client.gencache.EnsureModule(
 
 try :
     from visu import SEE
+    from visu.WinCut import GRAPHCUT
 except:
     print ('No visu module installed : pip install visu' )
     
@@ -71,7 +72,9 @@ class ANDOR(QWidget):
         self.actionButton()
         self.camIsRunnig=False
         self.initTemp()
-       
+        self.winSpectre=GRAPHCUT()
+        (self.spectreXmin,self.spectreXmax)=(185,500)
+        (self.spectreYmin,self.spectreYmax)=(500,600)
         
     def initCam(self):
         '''initialisation of cam parameter 
@@ -79,10 +82,11 @@ class ANDOR(QWidget):
         self.LineTrigger='trigg'
        
         try:
-                
+            print('ici2')  
             self.cam0 = win32com.client.Dispatch('Apogee.Camera2')
             self.ccdName=self.conf.value(self.nbcam+"/nameCDD")
             self.isConnected=True
+            print('ici')
         except:
             self.isConnected=False
             self.ccdName='no camera'
@@ -121,7 +125,7 @@ class ANDOR(QWidget):
         self.camName=QLabel(self.ccdName,self)
         self.camName.setAlignment(Qt.AlignCenter)
         
-        self.camName.setStyleSheet('font :bold  30pt;color: white')
+        self.camName.setStyleSheet('font :bold  8pt;color: white')
         vbox1.addWidget(self.camName)
         
         hbox1=QHBoxLayout() # horizontal layout pour run et stop
@@ -209,8 +213,12 @@ class ANDOR(QWidget):
         hboxTemp.addWidget(self.tempBox)
         vbox1.addLayout(hboxTemp)
         
+        
         self.IoButton=QPushButton('IO settings')
+        
         vbox1.addWidget(self.IoButton)
+        self.spectrebutton=QPushButton('Spectre')
+        vbox1.addWidget(self.spectrebutton)
         vbox1.addStretch(1)
         cameraWidget.setLayout(vbox1)
         cameraWidget.setMinimumSize(150,200)
@@ -241,6 +249,7 @@ class ANDOR(QWidget):
         self.trigg.currentIndexChanged.connect(self.trigA)
         self.tempButton.clicked.connect(self.TempButton)
         self.IoButton.clicked.connect(self.IOSet)
+        self.spectrebutton.clicked.connect(lambda:self.open_widget(self.winSpectre))
     
     def initTemp(self):
         self.threadRunTemp=ThreadRunTemp(cam0=self.cam0)
@@ -360,8 +369,33 @@ class ANDOR(QWidget):
         '''Display data with Visu module
         '''
         self.data=data
-        self.visualisation.newDataReceived(self.data) # send data to visualisation widget
+        self.visualisation.newDataReceived(self.data)
+        # send data to visualisation widget
         
+        self.cut=self.data[self.spectreYmin:self.spectreYmax,self.spectreXmin:self.spectreXmax].mean(axis=1)
+        
+        self.Xspectre=np.arange(0,np.shape(self.cut)[0])*120
+        
+        if np.shape(self.cut)[0]==np.shape(self.Xspectre)[0]:
+            self.winSpectre.PLOT(self.cut,axis=self.Xspectre,symbol=False,pen=True,label='Energy')
+        else: 
+            self.winSpectre.PLOT(self.cut,axis=None,symbol=False,pen=True,label='Energy')
+
+    def open_widget(self,fene):
+        """ open new widget 
+        """
+
+        if fene.isWinOpen==False:
+            fene.setup
+            fene.isWinOpen=True
+        
+            #fene.Display(self.data)
+            fene.show()
+        else:
+            #fene.activateWindow()
+            fene.raise_()
+            fene.showNormal()
+    
     def closeEvent(self,event):
         ''' closing window event (cross button)
         '''
