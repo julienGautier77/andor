@@ -10,10 +10,11 @@ It can make plot profile and data measurements  analysis
 ## Requirements
 
 *  install Apogee Setup.exe from andor
+*  add nouvelle fonctionnalité windows frameWork 3.5
 *   python 3.x
 *   Numpy
 *   PyQt5
-*   visu :  https://github.com/julienGautier77/visu.git
+*   visu
     
 
 
