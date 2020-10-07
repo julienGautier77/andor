@@ -10,7 +10,7 @@ It can make plot profile and data measurements  analysis
 ## Requirements
 
 *  install Apogee Setup.exe from andor
-*  add nouvelle fonctionnalité windows frameWork 3.5
+*  add  frameWork 3.5 : Control Panel\All Control Panel Items\Programs and Features : Turn windows feature on or off
 *   python 3.x
 *   Numpy
 *   PyQt5
