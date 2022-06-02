@@ -40,7 +40,7 @@ apogee_module = win32com.client.gencache.EnsureModule(
 
 
 try :
-    from visu import SEE2
+    from visu import SEE
 except:
     print ('No visu module installed : pip install visu' )
     
@@ -50,6 +50,7 @@ import qdarkstyle
 class ANDOR(QWidget):
     '''Andor class for allied vision Camera
     '''
+    signalData=QtCore.pyqtSignal(object)
     def __init__(self,cam='camDefault',confFile='confCCD.ini',**kwds):
         
         super(ANDOR, self).__init__()
@@ -85,14 +86,14 @@ class ANDOR(QWidget):
         self.LineTrigger='trigg'
        
         try:
-                
+            print('connection ...')
             self.cam0 = win32com.client.Dispatch('Apogee.Camera2')
             self.ccdName=self.conf.value(self.nbcam+"/nameCDD")
             self.isConnected=True
         except:
             self.isConnected=False
             self.ccdName='no camera'
-        
+            print('no ccd')
         self.setWindowTitle(self.ccdName+'       v.'+ version)
         
         if self.isConnected==True:
@@ -150,7 +151,7 @@ class ANDOR(QWidget):
         vbox1.addLayout(hbox1)
         
         self.trigg=QComboBox()
-        self.trigg.setMaximumWidth(60)
+        self.trigg.setMaximumWidth(80)
         self.trigg.addItem('OFF')
         self.trigg.addItem('ON')
         self.labelTrigger=QLabel('Trigger')
@@ -171,14 +172,14 @@ class ANDOR(QWidget):
         self.hSliderShutter.setMinimum(50)
         self.hSliderShutter.setMaximum(1000)
         if self.isConnected==True:
-            self.hSliderShutter.setValue(self.sh)
+            self.hSliderShutter.setValue(int(self.sh))
         self.hSliderShutter.setMaximumWidth(80)
         self.shutterBox=QSpinBox()
         self.shutterBox.setMinimum(50)
         self.shutterBox.setMaximum(1000)
 
         if self.isConnected==True:
-            self.shutterBox.setValue(self.sh)
+            self.shutterBox.setValue(int(self.sh))
         hboxShutter=QHBoxLayout()
         hboxShutter.addWidget(self.hSliderShutter)
         hboxShutter.addWidget(self.shutterBox)
@@ -194,7 +195,7 @@ class ANDOR(QWidget):
         if self.isConnected==True:
             self.hSliderGain.setMinimum(0)
             self.hSliderGain.setMaximum(1023)
-            self.hSliderGain.setValue(float(self.conf.value(self.nbcam+'/gain')))
+            self.hSliderGain.setValue(int(self.conf.value(self.nbcam+'/gain')))
         self.gainBox=QSpinBox()
         if self.isConnected==True:
             self.gainBox.setMinimum(0)
@@ -220,12 +221,12 @@ class ANDOR(QWidget):
         vbox1.addStretch(1)
         cameraWidget.setLayout(vbox1)
         cameraWidget.setMinimumSize(150,200)
-        cameraWidget.setMaximumSize(150,900)
+        cameraWidget.setMaximumSize(180,900)
         hMainLayout=QHBoxLayout()
         hMainLayout.addWidget(cameraWidget)
         
         
-        self.visualisation=SEE2(name=self.nbcam,**self.kwds) ## Widget for visualisation and tools 
+        self.visualisation=SEE(parent=self,name=self.nbcam,**self.kwds) ## Widget for visualisation and tools 
         
         vbox2=QVBoxLayout() 
         vbox2.addWidget(self.visualisation)
@@ -272,7 +273,7 @@ class ANDOR(QWidget):
         '''set exposure time 
         '''
         self.sh=self.shutterBox.value() # 
-        self.hSliderShutter.setValue(self.sh) # set value of slider
+        self.hSliderShutter.setValue(int(self.sh)) # set value of slider
         time.sleep(0.1)
         self.conf.setValue(self.nbcam+"/shutter",float(self.sh))
         self.conf.sync()
@@ -366,7 +367,9 @@ class ANDOR(QWidget):
         '''Display data with Visu module
         '''
         self.data=data
-        self.visualisation.newDataReceived(self.data) # send data to visualisation widget
+        # self.visualisation.newDataReceived(self.data) # send data to visualisation widget
+        self.signalData.emit(self.data)
+        
         
     def closeEvent(self,event):
         ''' closing window event (cross button)
@@ -415,7 +418,7 @@ class ThreadRunAcq(QtCore.QThread):
     def stopThreadRunAcq(self):
         
         self.stopRunAcq=True
-        time.sleep(0.5)
+        time.sleep(0.2)
         
         #self.cam0.StopExposure(bool(True))
         
